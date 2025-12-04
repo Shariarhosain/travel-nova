@@ -7,11 +7,7 @@ export class UpdateAccountSettingsDto {
 
   @IsOptional()
   @IsBoolean()
-  showActive?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  showFollowers?: boolean;
+  showActivityStatus?: boolean;
 
   @IsOptional()
   @IsBoolean()
@@ -23,15 +19,23 @@ export class UpdateAccountSettingsDto {
 
   @IsOptional()
   @IsBoolean()
-  searchByEmail?: boolean;
+  showLikedPosts?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  searchByUsername?: boolean;
+  showSavedPosts?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  suggestAccount?: boolean;
+  discoverableByEmail?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  discoverableByUsername?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  suggestToFollowers?: boolean;
 
   @IsOptional()
   @IsBoolean()
@@ -40,4 +44,13 @@ export class UpdateAccountSettingsDto {
   @IsOptional()
   @IsBoolean()
   autoBackup?: boolean;
+
+  // Admin-specific settings
+  @IsOptional()
+  @IsBoolean()
+  adminAutoApprovePosts?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  adminNewRegistrations?: boolean;
 }

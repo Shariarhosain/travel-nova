@@ -13,7 +13,7 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const { email, password, fullName, username } = registerDto;
+    const { email, password, fullName, username, fcmToken, deviceName, platform } = registerDto;
 
     // Check if user already exists
     const existingUser = await this.prisma.userAccount.findUnique({
@@ -22,6 +22,12 @@ export class AuthService {
 
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
+    }
+    const existingUsername = await this.prisma.userProfile.findUnique({
+      where: { username },
+    });
+    if (existingUsername) {
+      throw new ConflictException('Username is already taken');
     }
 
     // Hash password
@@ -56,6 +62,11 @@ export class AuthService {
       },
     });
 
+    // Store device token if provided
+    if (fcmToken && deviceName) {
+      await this.storeDeviceToken(user.id, fcmToken, deviceName, platform);
+    }
+
     const token = this.generateToken(user.id, user.email);
 
     return {
@@ -70,7 +81,7 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const { email, password } = loginDto;
+    const { email, password, fcmToken, deviceName, platform } = loginDto;
 
     const user = await this.prisma.userAccount.findUnique({
       where: { email },
@@ -91,6 +102,11 @@ export class AuthService {
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Store device token if provided
+    if (fcmToken && deviceName) {
+      await this.storeDeviceToken(user.id, fcmToken, deviceName, platform);
     }
 
     const token = this.generateToken(user.id, user.email);
@@ -210,5 +226,55 @@ export class AuthService {
   private generateToken(userId: string, email: string): string {
     const payload = { sub: userId, email };
     return this.jwtService.sign(payload);
+  }
+
+  private async storeDeviceToken(
+    userId: string,
+    fcmToken: string,
+    deviceName: string,
+    platform?: string,
+  ) {
+    // Check if token already exists, reactivate if so, create if not
+    await this.prisma.deviceToken.upsert({
+      where: { fcmToken },
+      update: {
+        deviceName,
+        platform,
+        isActive: true,
+        updatedAt: new Date(),
+      },
+      create: {
+        userAccountId: userId,
+        fcmToken,
+        deviceName,
+        platform,
+        isActive: true,
+      },
+    });
+  }
+
+  async logout(userId: string) {
+    // Mark all device tokens as inactive instead of deleting
+    await this.prisma.deviceToken.updateMany({
+      where: {
+        userAccountId: userId,
+        isActive: true,
+      },
+      data: {
+        isActive: false,
+      },
+    });
+
+    return { message: 'Logged out successfully' };
+  }
+
+  async removeAllDevices(userId: string) {
+    // Mark all device tokens as inactive
+    await this.prisma.deviceToken.updateMany({
+      where: { userAccountId: userId },
+      data: { isActive: false },
+    });
+
+    return { message: 'All devices logged out successfully' };
   }
 }

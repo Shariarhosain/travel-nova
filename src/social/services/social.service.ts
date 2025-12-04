@@ -208,7 +208,7 @@ export class SocialService {
         id: { not: userId },
         accountBanned: false,
         accountSettings: {
-          suggestAccount: true,
+          suggestToFollowers: true,
         },
         followedBy: {
           none: {

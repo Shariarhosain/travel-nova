@@ -1,0 +1,1771 @@
+{
+	"info": {
+		"_postman_id": "travel-nova-api-collection",
+		"name": "Travel Nova API",
+		"description": "Complete API collection for Travel Nova luxury travel social platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\",\n  \"username\": \"johndoe\",\n  \"fullName\": \"John Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"access_token\", jsonData.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Google Login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/google",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "google"]
+						},
+						"description": "Redirects to Google OAuth"
+					}
+				},
+				{
+					"name": "Facebook Login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/facebook",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "facebook"]
+						},
+						"description": "Redirects to Facebook OAuth"
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profile",
+							"host": ["{{base_url}}"],
+							"path": ["profile"]
+						}
+					}
+				},
+				{
+					"name": "Get User Profile by Username",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/profile/:username",
+							"host": ["{{base_url}}"],
+							"path": ["profile", ":username"],
+							"variable": [
+								{
+									"key": "username",
+									"value": "johndoe"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"bio\": \"Travel enthusiast and photographer\",\n  \"location\": \"New York, USA\",\n  \"website\": \"https://johndoe.com\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"gender\": \"MALE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/profile",
+							"host": ["{{base_url}}"],
+							"path": ["profile"]
+						}
+					}
+				},
+				{
+					"name": "Upload Profile Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/profile/profile-image",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "profile-image"]
+						}
+					}
+				},
+				{
+					"name": "Upload Cover Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/profile/cover-image",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "cover-image"]
+						}
+					}
+				},
+				{
+					"name": "Update Account Settings",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newemail@example.com\",\n  \"username\": \"newusername\",\n  \"phoneNumber\": \"+1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/profile/settings/account",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "settings", "account"]
+						}
+					}
+				},
+				{
+					"name": "Update Notification Settings",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"emailNotifications\": true,\n  \"pushNotifications\": true,\n  \"smsNotifications\": false,\n  \"notifyOnLike\": true,\n  \"notifyOnComment\": true,\n  \"notifyOnFollow\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/profile/settings/notifications",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "settings", "notifications"]
+						}
+					}
+				},
+				{
+					"name": "Update Privacy & Security Settings",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"profileVisibility\": \"PUBLIC\",\n  \"showEmail\": false,\n  \"showPhoneNumber\": false,\n  \"allowTagging\": true,\n  \"allowMessaging\": true,\n  \"twoFactorEnabled\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/profile/settings/privacy",
+							"host": ["{{base_url}}"],
+							"path": ["profile", "settings", "privacy"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Posts",
+			"item": [
+				{
+					"name": "Create Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "content",
+									"value": "Amazing sunset at Santorini! #travel #greece",
+									"type": "text"
+								},
+								{
+									"key": "location",
+									"value": "Santorini, Greece",
+									"type": "text"
+								},
+								{
+									"key": "tags",
+									"value": "travel,greece,sunset,santorini",
+									"type": "text"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/posts",
+							"host": ["{{base_url}}"],
+							"path": ["posts"]
+						}
+					}
+				},
+				{
+					"name": "Get All Posts (Feed)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["posts"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Post by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts/:id",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts/user/:userId?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["posts", "user", ":userId"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Post",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"Updated post content\",\n  \"location\": \"Paris, France\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/posts/:id",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Post",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts/:id",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Like Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts/:id/like",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "like"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Unlike Post",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts/:id/like",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "like"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Save Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts/:id/save",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "save"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Unsave Post",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts/:id/save",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "save"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Saved Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts/saved?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["posts", "saved"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Share Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts/:id/share",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "share"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Comment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"Beautiful place! I visited last summer.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/posts/:id/comments",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "comments"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Reply to Comment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"Thanks for sharing your experience!\",\n  \"parentCommentId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/posts/:id/comments",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "comments"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Post Comments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/posts/:id/comments",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "comments"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Itineraries",
+			"item": [
+				{
+					"name": "Create Itinerary",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "title",
+									"value": "10 Days in Japan",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Complete guide to exploring Tokyo, Kyoto, and Osaka",
+									"type": "text"
+								},
+								{
+									"key": "destination",
+									"value": "Japan",
+									"type": "text"
+								},
+								{
+									"key": "duration",
+									"value": "10",
+									"type": "text"
+								},
+								{
+									"key": "budget",
+									"value": "3000",
+									"type": "text"
+								},
+								{
+									"key": "season",
+									"value": "Spring",
+									"type": "text"
+								},
+								{
+									"key": "tags",
+									"value": "japan,asia,culture,food",
+									"type": "text"
+								},
+								{
+									"key": "bestTimeToVisit",
+									"value": "{\"months\": [\"March\", \"April\", \"May\"], \"reason\": \"Cherry blossom season\"}",
+									"type": "text"
+								},
+								{
+									"key": "mostVisitAttractions",
+									"value": "[{\"name\": \"Tokyo Tower\", \"description\": \"Iconic landmark\", \"estimatedTime\": \"2 hours\"}, {\"name\": \"Fushimi Inari Shrine\", \"description\": \"Famous shrine in Kyoto\", \"estimatedTime\": \"3 hours\"}]",
+									"type": "text"
+								},
+								{
+									"key": "whereToStay",
+									"value": "[{\"name\": \"Park Hyatt Tokyo\", \"type\": \"Hotel\", \"priceRange\": \"$$$\", \"location\": \"Shinjuku\"}, {\"name\": \"Gion Ryokan\", \"type\": \"Traditional Inn\", \"priceRange\": \"$$\", \"location\": \"Kyoto\"}]",
+									"type": "text"
+								},
+								{
+									"key": "coverImage",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/itineraries",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries"]
+						}
+					}
+				},
+				{
+					"name": "Get All Itineraries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/itineraries?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Itinerary by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/itineraries/:id",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User Itineraries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/itineraries/user/:userId?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries", "user", ":userId"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Itinerary",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated: 10 Days in Japan\",\n  \"description\": \"Revised complete guide\",\n  \"budget\": 3500\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/itineraries/:id",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Itinerary",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/itineraries/:id",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Like Itinerary",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/itineraries/:id/like",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries", ":id", "like"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Unlike Itinerary",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/itineraries/:id/like",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries", ":id", "like"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Save Itinerary",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/itineraries/:id/save",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries", ":id", "save"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Unsave Itinerary",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/itineraries/:id/save",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries", ":id", "save"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Saved Itineraries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/itineraries/saved?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["itineraries", "saved"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Social",
+			"item": [
+				{
+					"name": "Follow User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/social/follow/:userId",
+							"host": ["{{base_url}}"],
+							"path": ["social", "follow", ":userId"],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "2"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Unfollow User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/social/follow/:userId",
+							"host": ["{{base_url}}"],
+							"path": ["social", "follow", ":userId"],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "2"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Followers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/social/followers/:userId?page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["social", "followers", ":userId"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Following",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/social/following/:userId?page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["social", "following", ":userId"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Suggested Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/social/suggestions?limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["social", "suggestions"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Get Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications?page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["notifications"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Unread Count",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/unread-count",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", "unread-count"]
+						}
+					}
+				},
+				{
+					"name": "Mark as Read",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/:id/read",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", ":id", "read"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Mark All as Read",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notifications/read-all",
+							"host": ["{{base_url}}"],
+							"path": ["notifications", "read-all"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Discover",
+			"item": [
+				{
+					"name": "Search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/discover/search?q=paris&type=all&page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["discover", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "paris"
+								},
+								{
+									"key": "type",
+									"value": "all",
+									"description": "all | posts | itineraries | users"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Trending Destinations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/discover/trending?limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["discover", "trending"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Top Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/discover/top-posts?page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["discover", "top-posts"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Top Itineraries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/discover/top-itineraries?page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["discover", "top-itineraries"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get Dashboard Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "dashboard"]
+						},
+						"description": "Requires ADMIN role"
+					}
+				},
+				{
+					"name": "Get All Users (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/users?page=1&limit=50",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "users"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Requires ADMIN role"
+					}
+				},
+				{
+					"name": "Ban User",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Violation of community guidelines\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/users/:userId/ban",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "users", ":userId", "ban"],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Requires ADMIN role"
+					}
+				},
+				{
+					"name": "Unban User",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/users/:userId/unban",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "users", ":userId", "unban"],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Requires ADMIN role"
+					}
+				},
+				{
+					"name": "Get Pending Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/posts/pending?page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "posts", "pending"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Requires ADMIN role"
+					}
+				},
+				{
+					"name": "Approve Post",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/posts/:postId/approve",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "posts", ":postId", "approve"],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Requires ADMIN role"
+					}
+				},
+				{
+					"name": "Reject Post",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Inappropriate content\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/posts/:postId/reject",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "posts", ":postId", "reject"],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Requires ADMIN role"
+					}
+				},
+				{
+					"name": "Get Pending Itineraries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/itineraries/pending?page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "itineraries", "pending"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Requires ADMIN role"
+					}
+				},
+				{
+					"name": "Approve Itinerary",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/itineraries/:itineraryId/approve",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "itineraries", ":itineraryId", "approve"],
+							"variable": [
+								{
+									"key": "itineraryId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Requires ADMIN role"
+					}
+				},
+				{
+					"name": "Reject Itinerary",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Incomplete information\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/itineraries/:itineraryId/reject",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "itineraries", ":itineraryId", "reject"],
+							"variable": [
+								{
+									"key": "itineraryId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Requires ADMIN role"
+					}
+				}
+			]
+		},
+		{
+			"name": "File Upload",
+			"item": [
+				{
+					"name": "Upload Single File",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/file-upload/single",
+							"host": ["{{base_url}}"],
+							"path": ["file-upload", "single"]
+						}
+					}
+				},
+				{
+					"name": "Upload Multiple Files",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "files",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/file-upload/multiple",
+							"host": ["{{base_url}}"],
+							"path": ["file-upload", "multiple"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

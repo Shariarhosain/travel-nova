@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../services/auth.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
+import { LogoutDto } from '../dto/logout.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -46,5 +47,17 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   async getProfile(@Req() req: any) {
     return req.user;
+  }
+
+  @Post('logout')
+  @UseGuards(AuthGuard('jwt'))
+  async logout(@Req() req: any) {
+    return this.authService.logout(req.user.id);
+  }
+
+  @Post('logout-all')
+  @UseGuards(AuthGuard('jwt'))
+  async logoutAll(@Req() req: any) {
+    return this.authService.removeAllDevices(req.user.id);
   }
 }

@@ -3,6 +3,8 @@ import {
   Get,
   Put,
   Delete,
+  Patch,
+  Body,
   Param,
   UseGuards,
   Req,
@@ -11,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from '../services/admin.service';
+import { UpdateAdminSettingsDto } from '../dto/update-admin-settings.dto';
 
 @Controller('admin')
 @UseGuards(AuthGuard('jwt'))
@@ -99,5 +102,20 @@ export class AdminController {
   ) {
     this.checkAdmin(req.user);
     return this.adminService.deleteItinerary(itineraryId);
+  }
+
+  @Get('settings')
+  async getAdminSettings(@Req() req: any) {
+    this.checkAdmin(req.user);
+    return this.adminService.getAdminSettings(req.user.userId);
+  }
+
+  @Patch('settings')
+  async updateAdminSettings(
+    @Req() req: any,
+    @Body() settingsDto: UpdateAdminSettingsDto,
+  ) {
+    this.checkAdmin(req.user);
+    return this.adminService.updateAdminSettings(req.user.userId, settingsDto);
   }
 }

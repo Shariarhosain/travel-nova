@@ -11,15 +11,11 @@ export class UpdateNotificationSettingsDto {
 
   @IsOptional()
   @IsBoolean()
-  adminNotification?: boolean;
+  adminAdminNotification?: boolean;
 
   @IsOptional()
   @IsBoolean()
-  emailNotificationsPosts?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  securityAlerts?: boolean;
+  adminSecurityAlerts?: boolean;
 }
 
 export class UpdatePrivacySecuritySettingsDto {

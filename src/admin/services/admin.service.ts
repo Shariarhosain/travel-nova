@@ -198,4 +198,33 @@ export class AdminService {
 
     return { message: 'Itinerary deleted successfully' };
   }
+
+  async getAdminSettings(userId: string) {
+    const settings = await this.prisma.adminSettings.findUnique({
+      where: { userAccountId: userId },
+    });
+
+    // Return default settings if none exist
+    if (!settings) {
+      return {
+        adminAutoApprovePosts: false,
+        adminNewRegistrations: true,
+      };
+    }
+
+    return settings;
+  }
+
+  async updateAdminSettings(userId: string, settingsDto: any) {
+    const settings = await this.prisma.adminSettings.upsert({
+      where: { userAccountId: userId },
+      update: settingsDto,
+      create: {
+        userAccountId: userId,
+        ...settingsDto,
+      },
+    });
+
+    return settings;
+  }
 }

@@ -9,9 +9,12 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ProfileService } from '../services/profile.service';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UpdateAccountSettingsDto } from '../dto/update-account-settings.dto';
@@ -29,12 +32,12 @@ export class ProfileController {
     private fileUploadService: FileUploadService,
   ) {}
 
-  @Get('me')
+  @Get()
   async getMyProfile(@Req() req: any) {
     return this.profileService.getProfile(req.user.id);
   }
 
-  @Get('username/:username')
+  @Get(':username')
   async getProfileByUsername(
     @Param('username') username: string,
     @Req() req: any,
@@ -42,12 +45,38 @@ export class ProfileController {
     return this.profileService.getProfileByUsername(username, req.user?.id);
   }
 
-  @Put('me')
-  async updateProfile(@Req() req: any, @Body() updateProfileDto: UpdateProfileDto) {
-    return this.profileService.updateProfile(req.user.id, updateProfileDto);
+  @Patch()
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'profileImage', maxCount: 1 },
+      { name: 'coverImage', maxCount: 1 },
+    ]),
+  )
+  async updateProfile(
+    @Req() req: any,
+    @Body() updateProfileDto: UpdateProfileDto,
+    @UploadedFiles() files: { profileImage?: Express.Multer.File[], coverImage?: Express.Multer.File[] },
+  ) {
+    let profileImageUrl: string | undefined;
+    let coverImageUrl: string | undefined;
+
+    if (files?.profileImage?.[0]) {
+      profileImageUrl = await this.fileUploadService.uploadSingle(files.profileImage[0]);
+    }
+    
+    if (files?.coverImage?.[0]) {
+      coverImageUrl = await this.fileUploadService.uploadSingle(files.coverImage[0]);
+    }
+
+    return this.profileService.updateProfileWithImages(
+      req.user.id,
+      updateProfileDto,
+      profileImageUrl,
+      coverImageUrl,
+    );
   }
 
-  @Post('me/profile-image')
+  @Post('profile-image')
   @UseInterceptors(FileInterceptor('file'))
   async uploadProfileImage(
     @Req() req: any,
@@ -57,7 +86,7 @@ export class ProfileController {
     return this.profileService.uploadProfileImage(req.user.id, imageUrl);
   }
 
-  @Post('me/cover-image')
+  @Post('cover-image')
   @UseInterceptors(FileInterceptor('file'))
   async uploadCoverImage(
     @Req() req: any,
@@ -67,7 +96,7 @@ export class ProfileController {
     return this.profileService.uploadCoverImage(req.user.id, imageUrl);
   }
 
-  @Put('me/social-links')
+  @Put('social-links')
   async updateSocialLinks(
     @Req() req: any,
     @Body()
@@ -80,7 +109,7 @@ export class ProfileController {
     return this.profileService.updateSocialLinks(req.user.id, socialLinks);
   }
 
-  @Put('me/settings/account')
+  @Patch('settings/account')
   async updateAccountSettings(
     @Req() req: any,
     @Body() settingsDto: UpdateAccountSettingsDto,
@@ -88,7 +117,15 @@ export class ProfileController {
     return this.profileService.updateAccountSettings(req.user.id, settingsDto);
   }
 
-  @Put('me/settings/notifications')
+  @Patch('settings/privacy')
+  async updatePrivacySettings(
+    @Req() req: any,
+    @Body() settingsDto: UpdateAccountSettingsDto,
+  ) {
+    return this.profileService.updateAccountSettings(req.user.id, settingsDto);
+  }
+
+  @Patch('settings/notifications')
   async updateNotificationSettings(
     @Req() req: any,
     @Body() settingsDto: UpdateNotificationSettingsDto,
@@ -99,7 +136,7 @@ export class ProfileController {
     );
   }
 
-  @Put('me/settings/privacy-security')
+  @Patch('settings/privacy-security')
   async updatePrivacySecuritySettings(
     @Req() req: any,
     @Body() settingsDto: UpdatePrivacySecuritySettingsDto,
@@ -110,8 +147,23 @@ export class ProfileController {
     );
   }
 
-  @Get('me/statistics')
+  @Get('statistics')
   async getStatistics(@Req() req: any) {
     return this.profileService.getStatistics(req.user.id);
+  }
+
+  @Patch('deactivate')
+  async deactivateAccount(@Req() req: any) {
+    return this.profileService.deactivateAccount(req.user.id);
+  }
+
+  @Patch('reactivate')
+  async reactivateAccount(@Req() req: any) {
+    return this.profileService.reactivateAccount(req.user.id);
+  }
+
+  @Delete('delete')
+  async deleteAccount(@Req() req: any) {
+    return this.profileService.deleteAccount(req.user.id);
   }
 }

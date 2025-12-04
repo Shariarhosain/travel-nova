@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../../common/prisma.service';
 import { CreateItineraryDto } from '../dto/create-itinerary.dto';
 import { UpdateItineraryDto } from '../dto/update-itinerary.dto';
+import * as countryMapping from '../../common/country-continent-mapping.json';
 
 @Injectable()
 export class ItinerariesService {
@@ -51,6 +52,9 @@ export class ItinerariesService {
         })),
       });
     }
+
+    // Update travel statistics after creating itinerary
+    await this.updateUserTravelStatistics(userId);
 
     return this.findOne(itinerary.id, userId);
   }
@@ -157,6 +161,9 @@ export class ItinerariesService {
       where: { id },
       data: updateDto,
     });
+
+    // Update travel statistics after updating itinerary
+    await this.updateUserTravelStatistics(userId);
 
     return this.findOne(id, userId);
   }
@@ -278,6 +285,73 @@ export class ItinerariesService {
     });
 
     return { data: saved.map((s) => s.itinerary), total, skip, take };
+  }
+
+  private async updateUserTravelStatistics(userId: string) {
+    // Get all user itineraries with destinations
+    const itineraries = await this.prisma.itinerary.findMany({
+      where: { 
+        userAccountId: userId,
+      },
+      select: {
+        destination: true,
+      },
+    });
+
+    // Get user profile countries
+    const profile = await this.prisma.userProfile.findUnique({
+      where: { userAccountId: userId },
+      select: { countriesExplored: true },
+    });
+
+    // Extract countries from itinerary destinations
+    const itineraryCountries = new Set<string>();
+    for (const itinerary of itineraries) {
+      if (itinerary.destination) {
+        const country = this.extractCountry(itinerary.destination);
+        if (country) {
+          itineraryCountries.add(country);
+        }
+      }
+    }
+
+    // Combine profile countries with itinerary countries
+    const profileCountries = (profile?.countriesExplored as string[]) || [];
+    const allCountries = new Set([
+      ...itineraryCountries,
+      ...profileCountries,
+    ]);
+
+    // Calculate continents from countries
+    const continents = new Set<string>();
+    for (const country of allCountries) {
+      const continent = countryMapping[country as keyof typeof countryMapping];
+      if (continent) {
+        continents.add(continent);
+      }
+    }
+
+    // Upsert statistics
+    await this.prisma.userStatistics.upsert({
+      where: { userAccountId: userId },
+      update: {
+        totalTrips: itineraries.length,
+        countriesVisited: allCountries.size,
+        continentsVisited: continents.size,
+      },
+      create: {
+        userAccountId: userId,
+        totalTrips: itineraries.length,
+        countriesVisited: allCountries.size,
+        continentsVisited: continents.size,
+      },
+    });
+  }
+
+  private extractCountry(destination: string): string | null {
+    // Destinations are in format "City, Country" or just "Country"
+    const parts = destination.split(',').map((p) => p.trim());
+    return parts.length > 1 ? parts[parts.length - 1] : parts[0];
   }
 
   private async addTags(itineraryId: string, tagNames: string[]) {

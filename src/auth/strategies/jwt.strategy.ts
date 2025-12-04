@@ -21,8 +21,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       },
     });
 
-    if (!user || user.accountBanned) {
-      throw new UnauthorizedException();
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // // Check if account is deactivated (user self-deactivated)
+    // if (!user.isActive) {
+    //   throw new UnauthorizedException('Account is deactivated');
+    // }
+
+    // Check if account is banned (admin banned)
+    if (user.accountBanned) {
+      throw new UnauthorizedException('Account is banned');
     }
 
     return user;
