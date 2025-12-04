@@ -1,0 +1,547 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum Visibility {
+  ALL
+  FOLLOWERS
+  PRIVATE
+}
+
+enum PostStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+// User Account & Authentication
+model UserAccount {
+  id             String   @id @default(uuid())
+  fullName       String   @map("full_name")
+  email          String   @unique
+  password       String
+  accountBanned  Boolean  @default(false) @map("account_banned")
+  activeDevices  Json?    @map("active_devices") // Array of device tokens
+  role           UserRole @default(USER)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  profile                  UserProfile?
+  notificationSettings     NotificationSettings?
+  accountSettings          UserAccountSettings?
+  privacySecuritySettings  PrivacySecuritySettings?
+  posts                    Post[]
+  itineraries              Itinerary[]
+  postLikes                PostLike[]
+  postComments             PostComment[]
+  commentReplies           CommentReply[]
+  commentLikes             CommentLike[]
+  replyLikes               ReplyLike[]
+  postSaves                PostSave[]
+  postShares               PostShare[]
+  itineraryLikes           ItineraryLike[]
+  itinerarySaves           ItinerarySave[]
+  followers                Follower[]       @relation("UserFollowers")
+  following                Following[]      @relation("UserFollowing")
+  followedBy               Follower[]       @relation("FollowerUser")
+  followingUsers           Following[]      @relation("FollowingUser")
+  notifications            Notification[]
+  statistics               UserStatistics?
+
+  @@map("user_account")
+}
+
+model UserProfile {
+  id                  String   @id @default(uuid())
+  userAccountId       String   @unique @map("user_account_id")
+  username            String   @unique
+  bio                 String?  @db.Text
+  location            String?
+  website             String?
+  birthday            DateTime?
+  gender              Gender?
+  achievements        Json?    // Array of achievement objects
+  countriesExplored   Json?    @map("countries_explored") // Array of country names
+  profileImage        String?  @map("profile_image")
+  coverImage          String?  @map("cover_image")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  userAccount         UserAccount      @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  socialLinks         UserSocialLinks?
+
+  @@map("user_profile")
+}
+
+model NotificationSettings {
+  id                        String   @id @default(uuid())
+  userAccountId             String   @unique @map("user_account_id")
+  pushNotification          Boolean  @default(true) @map("push_notification")
+  emailNotification         Boolean  @default(true) @map("email_notification")
+  adminNotification         Boolean  @default(true) @map("admin_notification")
+  emailNotificationsPosts   Boolean  @default(false) @map("email_notifications_posts")
+  securityAlerts            Boolean  @default(true) @map("security_alerts")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  userAccount               UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
+}
+
+model UserSocialLinks {
+  id                String   @id @default(uuid())
+  userProfileId     String   @unique @map("user_profile_id")
+  instagramUsername String?  @map("instagram_username")
+  twitterUsername   String?  @map("twitter_username")
+  facebookUsername  String?  @map("facebook_username")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  userProfile       UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+
+  @@map("user_social_links")
+}
+
+model UserAccountSettings {
+  id                 String   @id @default(uuid())
+  userAccountId      String   @unique @map("user_account_id")
+  accountPrivate     Boolean  @default(false) @map("account_private")
+  showActive         Boolean  @default(true) @map("show_active")
+  showFollowers      Boolean  @default(true) @map("show_followers")
+  showFollowersList  Boolean  @default(true) @map("show_followers_list")
+  showFollowingList  Boolean  @default(true) @map("show_following_list")
+  searchByEmail      Boolean  @default(true) @map("search_by_email")
+  searchByUsername   Boolean  @default(true) @map("search_by_username")
+  suggestAccount     Boolean  @default(true) @map("suggest_account")
+  darkMode           Boolean  @default(false) @map("dark_mode")
+  autoBackup         Boolean  @default(false) @map("auto_backup")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  userAccount        UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@map("user_account_settings")
+}
+
+model PrivacySecuritySettings {
+  id                    String   @id @default(uuid())
+  userAccountId         String   @unique @map("user_account_id")
+  twoFactorEnabled      Boolean  @default(false) @map("two_factor_enabled")
+  enableFaceId          Boolean  @default(false) @map("enable_face_id")
+  rememberMe            Boolean  @default(false) @map("remember_me")
+  rememberMeBrowser     Boolean  @default(false) @map("remember_me_browser")
+  trustedContactEmail   String?  @map("trusted_contact_email")
+  blockedUsers          Json?    @map("blocked_users") // Array of blocked user IDs
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  userAccount           UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@map("privacy_security_settings")
+}
+
+// Social Relationships
+model Follower {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id") // User being followed
+  followerId String   @map("follower_id") // User who follows
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user       UserAccount @relation("UserFollowers", fields: [userId], references: [id], onDelete: Cascade)
+  follower   UserAccount @relation("FollowerUser", fields: [followerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, followerId])
+  @@map("followers")
+}
+
+model Following {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id") // User who follows
+  followingId String   @map("following_id") // User being followed
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user        UserAccount @relation("UserFollowing", fields: [userId], references: [id], onDelete: Cascade)
+  following   UserAccount @relation("FollowingUser", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, followingId])
+  @@map("following")
+}
+
+// Posts
+model Post {
+  id               String     @id @default(uuid())
+  userAccountId    String     @map("user_account_id")
+  imageLinks       Json?      @map("image_links") // Array of image URLs
+  caption          String?    @db.Text
+  details          String?    @db.Text
+  location         String?
+  visibility       Visibility @default(ALL)
+  likeCount        Int        @default(0) @map("like_count")
+  commentCount     Int        @default(0) @map("comment_count")
+  shareCount       Int        @default(0) @map("share_count")
+  viewCount        Int        @default(0) @map("view_count")
+  approvedByAdmin  Boolean    @default(false) @map("approved_by_admin")
+  status           PostStatus @default(ACTIVE)
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  userAccount      UserAccount   @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  postTags         PostTag[]
+  likes            PostLike[]
+  comments         PostComment[]
+  saves            PostSave[]
+  shares           PostShare[]
+  notifications    Notification[]
+
+  @@map("posts")
+}
+
+model Tag {
+  id            String         @id @default(uuid())
+  tagName       String         @unique @map("tag_name")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  postTags      PostTag[]
+  itineraryTags ItineraryTag[]
+
+  @@map("tags")
+}
+
+model PostTag {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  tagId     String   @map("tag_id")
+
+  // Relations
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, tagId])
+  @@map("post_tags")
+}
+
+model PostLike {
+  id            String   @id @default(uuid())
+  postId        String   @map("post_id")
+  userAccountId String   @map("user_account_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  post          Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userAccountId])
+  @@map("post_likes")
+}
+
+model PostComment {
+  id            String   @id @default(uuid())
+  postId        String   @map("post_id")
+  userAccountId String   @map("user_account_id")
+  commentText   String   @map("comment_text") @db.Text
+  likeCount     Int      @default(0) @map("like_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  post          Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userAccount   UserAccount    @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  replies       CommentReply[]
+  likes         CommentLike[]
+
+  @@map("post_comments")
+}
+
+model CommentReply {
+  id            String   @id @default(uuid())
+  commentId     String   @map("comment_id")
+  userAccountId String   @map("user_account_id")
+  replyText     String   @map("reply_text") @db.Text
+  likeCount     Int      @default(0) @map("like_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  comment       PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  likes         ReplyLike[]
+
+  @@map("comment_replies")
+}
+
+model CommentLike {
+  id            String   @id @default(uuid())
+  commentId     String   @map("comment_id")
+  userAccountId String   @map("user_account_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  comment       PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userAccountId])
+  @@map("comment_likes")
+}
+
+model ReplyLike {
+  id            String   @id @default(uuid())
+  replyId       String   @map("reply_id")
+  userAccountId String   @map("user_account_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  reply         CommentReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  userAccount   UserAccount  @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([replyId, userAccountId])
+  @@map("reply_likes")
+}
+
+model PostSave {
+  id            String   @id @default(uuid())
+  postId        String   @map("post_id")
+  userAccountId String   @map("user_account_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  post          Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userAccountId])
+  @@map("post_saves")
+}
+
+model PostShare {
+  id            String   @id @default(uuid())
+  postId        String   @map("post_id")
+  userAccountId String   @map("user_account_id")
+  sharedTo      String?  @map("shared_to") // platform name
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  post          Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@map("post_shares")
+}
+
+// Itineraries
+model Itinerary {
+  id              String     @id @default(uuid())
+  userAccountId   String     @map("user_account_id")
+  mainImageLink   String?    @map("main_image_link")
+  postType        String     @default("itinerary") @map("post_type")
+  title           String
+  description     String?    @db.Text
+  destination     String?
+  country         String?
+  budget          Decimal?   @db.Decimal(10, 2)
+  rating          Decimal?   @db.Decimal(2, 1)
+  durationDays    Int?       @map("duration_days")
+  likeCount       Int        @default(0) @map("like_count")
+  commentCount    Int        @default(0) @map("comment_count")
+  shareCount      Int        @default(0) @map("share_count")
+  saveCount       Int        @default(0) @map("save_count")
+  visibility      Visibility @default(ALL)
+  approvedByAdmin Boolean    @default(false) @map("approved_by_admin")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  userAccount            UserAccount              @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  tags                   ItineraryTag[]
+  optionDetails          ItineraryOptionDetail[]
+  bestTimeToVisit        BestTimeToVisit[]
+  mostVisitAttractions   MostVisitAttraction[]
+  whereToStay            WhereToStay[]
+  likes                  ItineraryLike[]
+  saves                  ItinerarySave[]
+  notifications          Notification[]
+
+  @@map("itineraries")
+}
+
+model ItineraryTag {
+  id           String     @id @default(uuid())
+  itineraryId  String     @map("itinerary_id")
+  tagId        String     @map("tag_id")
+
+  // Relations
+  itinerary    Itinerary  @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  tag          Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([itineraryId, tagId])
+  @@map("itinerary_tags")
+}
+
+model ItineraryOptionDetail {
+  id           String     @id @default(uuid())
+  itineraryId  String     @map("itinerary_id")
+  budgetRange  String?    @map("budget_range")
+  rating       Decimal?   @db.Decimal(2, 1)
+  dateFrom     DateTime?  @map("date_from")
+  dateTo       DateTime?  @map("date_to")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  itinerary    Itinerary  @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+
+  @@map("itinerary_option_details")
+}
+
+model BestTimeToVisit {
+  id           String     @id @default(uuid())
+  itineraryId  String     @map("itinerary_id")
+  duration     String?
+  badge        String?    // e.g., Cherry blossom season
+  temperature  String?    // e.g., 15-25°C
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  itinerary    Itinerary  @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+
+  @@map("best_time_to_visit")
+}
+
+model MostVisitAttraction {
+  id             String     @id @default(uuid())
+  itineraryId    String     @map("itinerary_id")
+  imageLink      String?    @map("image_link")
+  attractionName String?    @map("attraction_name")
+  rating         Decimal?   @db.Decimal(2, 1)
+  price          Decimal?   @db.Decimal(10, 2)
+  location       String?
+  description    String?    @db.Text
+  createdAt      DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  itinerary      Itinerary  @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+
+  @@map("most_visit_attractions")
+}
+
+model WhereToStay {
+  id          String     @id @default(uuid())
+  itineraryId String     @map("itinerary_id")
+  imageLink   String?    @map("image_link")
+  hotelName   String     @map("hotel_name")
+  rating      Decimal?   @db.Decimal(2, 1)
+  price       Decimal?   @db.Decimal(10, 2)
+  location    String?
+  amenities   Json?      // Array of amenities
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  itinerary   Itinerary  @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+
+  @@map("where_to_stay")
+}
+
+model ItineraryLike {
+  id            String   @id @default(uuid())
+  itineraryId   String   @map("itinerary_id")
+  userAccountId String   @map("user_account_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  itinerary     Itinerary   @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([itineraryId, userAccountId])
+  @@map("itinerary_likes")
+}
+
+model ItinerarySave {
+  id            String   @id @default(uuid())
+  itineraryId   String   @map("itinerary_id")
+  userAccountId String   @map("user_account_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  itinerary     Itinerary   @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([itineraryId, userAccountId])
+  @@map("itinerary_saves")
+}
+
+// Notifications
+model Notification {
+  id                 String   @id @default(uuid())
+  userAccountId      String   @map("user_account_id")
+  type               String   // like, comment, follow, mention, trending
+  content            String?  @db.Text
+  relatedUserId      String?  @map("related_user_id")
+  relatedPostId      String?  @map("related_post_id")
+  relatedItineraryId String?  @map("related_itinerary_id")
+  isRead             Boolean  @default(false) @map("is_read")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  // Relations
+  userAccount        UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  relatedPost        Post?       @relation(fields: [relatedPostId], references: [id], onDelete: SetNull)
+  relatedItinerary   Itinerary?  @relation(fields: [relatedItineraryId], references: [id], onDelete: SetNull)
+
+  @@map("notifications")
+}
+
+// Analytics & Trending
+model TrendingDestination {
+  id              String   @id @default(uuid())
+  destinationName String   @map("destination_name")
+  country         String?
+  imageLink       String?  @map("image_link")
+  rating          Decimal? @db.Decimal(2, 1)
+  popularityScore Int      @default(0) @map("popularity_score")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("trending_destinations")
+}
+
+model UserStatistics {
+  id                  String   @id @default(uuid())
+  userAccountId       String   @unique @map("user_account_id")
+  totalPosts          Int      @default(0) @map("total_posts")
+  totalFollowers      Int      @default(0) @map("total_followers")
+  totalFollowing      Int      @default(0) @map("total_following")
+  totalLikesReceived  Int      @default(0) @map("total_likes_received")
+  engagementScore     Decimal  @default(0) @db.Decimal(10, 2) @map("engagement_score")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  userAccount         UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+
+  @@map("user_statistics")
+}
