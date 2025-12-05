@@ -29,7 +29,7 @@ export class PostsController {
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
-  @UseInterceptors(FilesInterceptor('images', 10))
+  @UseInterceptors(FilesInterceptor('image', 10))
   async create(
     @Req() req: any,
     @Body() createPostDto: CreatePostDto,

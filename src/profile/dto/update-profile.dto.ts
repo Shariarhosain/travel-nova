@@ -7,11 +7,13 @@ import {
   IsArray,
   IsEmail,
   MinLength,
+  isString,
 } from 'class-validator';
 import { Gender } from '@prisma/client';
 import { Transform } from 'class-transformer';
 
 export class UpdateProfileDto {
+  
   @IsOptional()
   @IsString()
   username?: string;
