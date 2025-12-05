@@ -582,3 +582,18 @@ model DeviceToken {
 
   @@map("device_tokens")
 }
+
+// Password Reset
+model PasswordReset {
+  id            String   @id @default(uuid())
+  email         String   @map("email")
+  code          String   @map("code")
+  resetToken    String?  @unique @map("reset_token")
+  isVerified    Boolean  @default(false) @map("is_verified")
+  expiresAt     DateTime @map("expires_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([email])
+  @@index([code])
+  @@map("password_resets")
+}
