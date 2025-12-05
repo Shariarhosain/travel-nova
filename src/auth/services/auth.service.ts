@@ -23,11 +23,15 @@ export class AuthService {
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
-    const existingUsername = await this.prisma.userProfile.findUnique({
-      where: { username },
-    });
-    if (existingUsername) {
-      throw new ConflictException('Username is already taken');
+
+    // Only check username if provided
+    if (username) {
+      const existingUsername = await this.prisma.userProfile.findUnique({
+        where: { username },
+      });
+      if (existingUsername) {
+        throw new ConflictException('Username is already taken');
+      }
     }
 
     // Hash password
