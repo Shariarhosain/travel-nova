@@ -31,7 +31,10 @@ export class PostsService {
       data: { totalPosts: { increment: 1 } },
     });
 
-    return this.findOne(post.id, userId);
+    return {
+      success: true,
+      message: 'Post created successfully'
+    };
   }
 
   async findAll(userId?: string, skip = 0, take = 20) {
