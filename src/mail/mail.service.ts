@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
-import { Resend } from 'resend';
 
 @Injectable()
 export class MailService {
   private transporter: nodemailer.Transporter;
-  private resend: Resend;
 
   constructor() {
-    // SMTP configuration (for local development)
+    // SMTP configuration
     this.transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.EMAIL_PORT || '587'),
@@ -21,43 +19,9 @@ export class MailService {
         rejectUnauthorized: false,
       },
     });
-
-    // Resend for Railway deployment (SMTP gets blocked)
-    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
   async sendPasswordResetEmail(email: string, code: string, fullName: string) {
-    // Use Resend if API key is available (for Railway), otherwise use SMTP (for local)
-    if (process.env.RESEND_API_KEY) {
-      return this.sendViaResend(email, code, fullName);
-    } else {
-      return this.sendViaSMTP(email, code, fullName);
-    }
-  }
-
-  private async sendViaResend(email: string, code: string, fullName: string) {
-    try {
-      const { data, error } = await this.resend.emails.send({
-        from: 'Travel Nova <onboarding@resend.dev>',
-        to: [email],
-        subject: 'Password Reset Request - Travel Nova',
-        html: this.getPasswordResetEmailTemplate(code, fullName),
-      });
-
-      if (error) {
-        console.error('❌ Resend error:', error);
-        throw new Error(`Email service error: ${error.message}`);
-      }
-
-      console.log('✅ Email sent successfully via Resend:', data.id);
-      return { success: true };
-    } catch (error) {
-      console.error('❌ Error sending email via Resend:', error);
-      throw new Error('Failed to send password reset email');
-    }
-  }
-
-  private async sendViaSMTP(email: string, code: string, fullName: string) {
     const mailOptions = {
       from: `"Travel Nova" <${process.env.EMAIL_USER}>`,
       to: email,
