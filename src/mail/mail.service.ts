@@ -6,7 +6,7 @@ export class MailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
-    // Simple SMTP configuration
+    // SMTP configuration with Railway compatibility
     this.transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.EMAIL_PORT || '587'),
@@ -16,8 +16,14 @@ export class MailService {
         pass: process.env.EMAIL_PASS,
       },
       tls: {
-        rejectUnauthorized: false,
+        rejectUnauthorized: process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0',
+        ciphers: 'SSLv3',
       },
+      connectionTimeout: 60000, // 60 seconds
+      greetingTimeout: 30000, // 30 seconds
+      socketTimeout: 60000, // 60 seconds
+      debug: true, // Enable debug logs for Railway
+      logger: true,
     });
   }
 
